@@ -19,11 +19,11 @@ var addData = (dataInput) => {
 addData(tableData);
 
 // define references to fields and buttons
-var dateField    = d3.select("#datetime");
-var cityField    = d3.select("#city");
-var stateField   = d3.select("#state");
+var dateField = d3.select("#datetime");
+var cityField = d3.select("#city");
+var stateField = d3.select("#state");
 var countryField = d3.select("#country");
-var shapeField   = d3.select("#shape");
+var shapeField = d3.select("#shape");
 var button = d3.select("#filter-btn");
 
 // filter the table by properties
@@ -34,54 +34,38 @@ function filterObs(){
     filtered = 1;
 
     //set values
-    var userDate    = dateField.property("value");
-    var userCity    = cityField.property("value").toLowerCase();
-    var userState   = stateField.property("value").toLowerCase();
+    var userDate = dateField.property("value");
+    var userCity = cityField.property("value").toLowerCase();
+    var userState = stateField.property("value").toLowerCase();
     var userCountry = countryField.property("value").toLowerCase();
-    var userShape   = shapeField.property("value").toLowerCase();
+    var userShape = shapeField.property("value").toLowerCase();
 
-    // only filter if user entered a value
+    //only filter if user entered a value
     if(userDate || userCity || userState || userCountry || userShape){
         filtered = 1;
 
-        // use only conditions where values are entered
+        //use only conditions where values are entered
         var userArray = [["datetime", userDate], ["city", userCity], ["state", userState], ["country", userCountry], ["shape", userShape]];
         var existingArray = userArray.filter(user => user[1] !== "");
         var condition = existingArray.map(arr => "obs." + arr[0] + " == " + "'" + arr[1] + "'").join(" && ");
 
         tableMatch = tableData.filter(obs => eval(condition));
 
-        // wipe out the tbody to be able to write out new table
         $tbody.html("");
 
-        // fill in observations only where date matches user input
+        //fill in obs
         tableMatch.forEach(row => {
             $tbody.append("tr");
-        
+                    
             for (key in row){
                 const cell = $tbody.append("td");
                 cell.text(row[key]);
             }
         });
-    };
-}
-
-// reset table to original display
-function resetData(){
- 
-    d3.event.preventDefault();
-    document.forms['ufo-form'].reset()
-    filtered = 0;
-    $tbody.html("");
-    tableData.forEach(row => {
-        $tbody.append("tr");
-    
-        for (key in row){
-            const cell = $tbody.append("td");
-            cell.text(row[key]);
-        }
-    });
-}
+    }
+        else {
+            $tbody.append("tr").append("td").text("None Found.. Try Again");
+}}
 
 // return full table or filtered table
 function tableReturned(filtered_val){
