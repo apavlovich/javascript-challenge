@@ -1,24 +1,13 @@
 // from data.js
 var tableData = data;
+var tableMatch = null;
 
-// YOUR CODE HERE!
-
-//test that data.js is working in the console in the HTML page
-
-console.log(tableData);
-
-//create references
-
+// set the reference to the table body and initialize filter flag
 var $tbody = d3.select("tbody");
-var button = d3.select("#filter-btn");
-var inputFieldDate = d3.select("#datetime");
-var inputFieldCity = d3.select("#city");
-var inputFieldState = d3.select("#state");
-var inputFieldCountry = d3.select("#country");
-var inputFieldShape = d3.select("#shape");
+var filtered = 0;
 var columns = ["datetime", "city", "state", "country", "shape", "durationMinutes", "comments"]
 
-//input data into the html
+// fill in full table by default
 var addData = (dataInput) => {
     dataInput.forEach(ufoSightings => {
         var row = $tbody.append("tr");
@@ -29,34 +18,91 @@ var addData = (dataInput) => {
 
 addData(tableData);
 
-button.on("click", () => {
+// define references to fields and buttons
+var dateField    = d3.select("#datetime");
+var cityField    = d3.select("#city");
+var stateField   = d3.select("#state");
+var countryField = d3.select("#country");
+var shapeField   = d3.select("#shape");
+var button = d3.select("#filter-btn");
+
+// filter the table by properties
+function filterObs(){
+   
     d3.event.preventDefault();
+    // flag that table is filtered
+    filtered = 1;
 
-    var inputDate = inputFieldDate.property("value").trim();
-    var inputCity = inputFieldCity.property("value").toLowerCase().trim();
-    var inputState = inputFieldState.property("value").toLowerCase().trim();
-    var inputCountry = inputFieldCountry.property("value").toLowerCase().trim();
-    var inputShape = inputFieldShape.property("value").toLowerCase().trim();
+    //set values
+    var userDate    = dateField.property("value");
+    var userCity    = cityField.property("value").toLowerCase();
+    var userState   = stateField.property("value").toLowerCase();
+    var userCountry = countryField.property("value").toLowerCase();
+    var userShape   = shapeField.property("value").toLowerCase();
 
-    var filterDate = tableData.filter(tableData => tableData.datetime === inputDate);
-    var filterCity = tableData.fitler(tableData => tableData.city === inputCity);
-    var filterState = tableData.filter(tableData => tableData.state === inputState);
-    var filterCountry = tableData.filter(tableData => tableData.country === inputCountry);
-    var filterShape = tableData.filter(tableData => tableData.shape === inputShape);
+    // only filter if user entered a value
+    if(userDate || userCity || userState || userCountry || userShape){
+        filtered = 1;
 
-    var filterCombinedData = tableData.filter(tableData => tableData.datetime === inputDate && tableData.city === inputCity && tableData.state === inputState && tableData.country === inputCountry && tableData.shape === inputShape);
+        // use only conditions where values are entered
+        var userArray = [["datetime", userDate], ["city", userCity], ["state", userState], ["country", userCountry], ["shape", userShape]];
+        var existingArray = userArray.filter(user => user[1] !== "");
+        var condition = existingArray.map(arr => "obs." + arr[0] + " == " + "'" + arr[1] + "'").join(" && ");
 
+        tableMatch = tableData.filter(obs => eval(condition));
+
+        // wipe out the tbody to be able to write out new table
+        $tbody.html("");
+
+        // fill in observations only where date matches user input
+        tableMatch.forEach(row => {
+            $tbody.append("tr");
+        
+            for (key in row){
+                const cell = $tbody.append("td");
+                cell.text(row[key]);
+            }
+        });
+    };
+}
+
+// reset table to original display
+function resetData(){
+ 
+    d3.event.preventDefault();
+    document.forms['ufo-form'].reset()
+    filtered = 0;
     $tbody.html("");
-    let response = {
-        filterDate, filterCity, filterState, filterCountry, filterShape, filterCombinedData
-    }
-    if(response.filterCombinedData.length !== 0) {
-        addData(filterCombinedData);
-    }
-        else if(response.filterCombinedData.length == 0 && ((response.filterDate.length !== 0 || response.filterCity.length !== 0 || response.filterState.length !== 0 || response.filterCountry.length !== 0 || response.filterShape.length !== 0))) {
-            addData(filterDate) || addData(filterCity) || addData(filterState) || addData(filterCountry) || addData(filterShape);
+    tableData.forEach(row => {
+        $tbody.append("tr");
+    
+        for (key in row){
+            const cell = $tbody.append("td");
+            cell.text(row[key]);
         }
-        else {
-            $tbody.append("tr").append("td").text("None Found.. Try Again");
-        }
-})
+    });
+}
+
+// return full table or filtered table
+function tableReturned(filtered_val){
+    if (filtered_val){
+        return tableMatch;
+    } else {
+        return tableData;
+    }
+}
+
+// run filterObs function if Enter key is pressed
+function enterFilterObs(){
+    if (d3.event.keyCode == 13){
+        filterObs();
+    }
+}
+
+// define what happens when user clicks the button
+button.on("click", filterObs);
+
+//allow user to hit enter instead of clicking "filter table"
+d3.selectAll(".form-control").on("keyup",enterFilterObs);
+
+

@@ -41,3 +41,6 @@ button.on("click", () => {
             $tbody.append("tr").append("td").text("None Found.. Try Again");
         }
 })
+
+// alternatively allow user to just hit Enter to filter for any field
+d3.selectAll(".form-control").on("keyup",enterFilterObs);
