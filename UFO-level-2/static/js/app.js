@@ -2,12 +2,12 @@
 var tableData = data;
 var tableMatch = null;
 
-// set the reference to the table body and initialize filter flag
+// set the references
 var $tbody = d3.select("tbody");
 var filtered = 0;
 var columns = ["datetime", "city", "state", "country", "shape", "durationMinutes", "comments"]
 
-// fill in full table by default
+//input data into the html
 var addData = (dataInput) => {
     dataInput.forEach(ufoSightings => {
         var row = $tbody.append("tr");
@@ -18,7 +18,7 @@ var addData = (dataInput) => {
 
 addData(tableData);
 
-// define references to fields and buttons
+//set references to fields and buttons
 var dateField = d3.select("#datetime");
 var cityField = d3.select("#city");
 var stateField = d3.select("#state");
